@@ -47,7 +47,7 @@ The workbench equips fraud analysts to inspect and triage payment transactions w
            |                                             |
 +-----------------------+                    +--------------------------+
 | Reference Baseline    |                    | Demo Batch Transactions  |
-|  (fraud/data.py)      |                    | (data/sample_txn.csv)    |
+|  (fraud/data.py)      |                    | (data/sample_transactions.csv)|
 | 1,000 synthetic items |                    | 50 synthetic test items  |
 | seed=42 (Cached once) |                    | seed=1337                |
 +-----------------------+                    +--------------------------+
@@ -186,7 +186,7 @@ python3 -m fraud.data
 ## 8. Limitations & Boundary Scope
 
 - **Synthetic Data**: Uses synthetic random distributions; does not model complex real-world fraud schemes, seasonal trends, or merchant category codes.
-- **Uncalibrated Anomaly Scores**: `decision_function` scores measure geometric distance in feature space, **not** calibrated probabilities of fraud.
+- **Uncalibrated Anomaly Scores**: `decision_function` scores measure average path depth across isolation trees, **not** calibrated probabilities of fraud.
 - **Supplied Synthetic Features**: Features like historical average and 10-minute velocity are ingested as pre-aggregated synthetic inputs; no distributed stream-processing or feature-store aggregation is included.
 - **Human Triage Required**: Flagging an item as `"Review"` is a triage signal for human review, not an autonomous blocking or confirmation action.
 
