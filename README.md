@@ -2,6 +2,19 @@
 
 A lightweight, self-contained Python demonstration workbench for payment fraud triage. It combines an unsupervised **IsolationForest** anomaly baseline with deterministic business policy thresholds, factual input-derived evidence, and structured JSON telemetry.
 
+## Evidence Pack
+
+The engineering evidence pack is in [`evidence/`](evidence/):
+
+| File | Contents |
+|---|---|
+| [`evidence/intent.md`](evidence/intent.md) | Problem statement, users, assumptions, constraints, success criteria |
+| [`evidence/design.md`](evidence/design.md) | Architecture, data flow, component boundaries, trade-offs, cloud shape |
+| [`evidence/agentic-workflow.md`](evidence/agentic-workflow.md) | AI tools used, work decomposition, steering prompts, review approach |
+| [`evidence/verify.md`](evidence/verify.md) | Test results, known gaps, local vs CI check split |
+| [`evidence/operate.md`](evidence/operate.md) | Run instructions, logs, config, failure modes, rollback, local-to-cloud |
+| [`evidence/decisions.md`](evidence/decisions.md) | 5 decision records with rationale and trade-offs |
+
 ---
 
 ## 1. Purpose & Demo Walkthrough
