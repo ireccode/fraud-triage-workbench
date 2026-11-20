@@ -66,6 +66,8 @@ def main():
     analyse_clicked = st.button("Analyse transactions", type="primary")
 
     if analyse_clicked:
+        # Clear any previous run state so a failure does not leave stale data
+        st.session_state.pop("latest_run", None)
         collector = TelemetryCollector()
         start_analysis = time.perf_counter()
         try:
