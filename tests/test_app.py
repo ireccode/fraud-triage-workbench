@@ -77,7 +77,3 @@ def test_failed_run_clears_stale_session_state(monkeypatch):
     assert "latest_run" not in at.session_state
     assert len(at.error) >= 1
     assert "Forced validation failure for testing" in at.error[0].value
-
-
-
-

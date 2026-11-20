@@ -5,16 +5,15 @@ combined with deterministic policy rules, factual evidence statements,
 and lightweight structured application telemetry.
 """
 
-from pathlib import Path
 import time
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
 from fraud.data import generate_demo_data
 from fraud.detection import (
-    MODEL_VERSION,
     POLICY_AMOUNT_RATIO_THRESHOLD,
-    POLICY_VERSION,
     evaluate_batch,
     train_reference_model,
 )
@@ -59,7 +58,9 @@ def main():
 
     # Section 1: Bundled Sample Preview
     st.subheader("1. Bundled Transactions Preview")
-    st.caption(f"Showing sample transactions available for evaluation ({len(sample_df)} total records).")
+    st.caption(
+        f"Showing sample transactions available for evaluation ({len(sample_df)} total records)."
+    )
     st.dataframe(sample_df.head(6), use_container_width=True)
 
     # Section 2: Trigger Analysis
@@ -72,7 +73,9 @@ def main():
         start_analysis = time.perf_counter()
         try:
             results = evaluate_batch(sample_df, model=model, collector=collector)
-            analysis_duration_ms = round((time.perf_counter() - start_analysis) * 1000.0, 2)
+            analysis_duration_ms = round(
+                (time.perf_counter() - start_analysis) * 1000.0, 2
+            )
 
             # Prepare sorted review queue (lowest anomaly score = most unusual first)
             review_queue = (
@@ -110,7 +113,7 @@ def main():
             if hasattr(val_err, "errors"):
                 for err in val_err.errors:
                     st.write(f"- {err}")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             st.error(f"Analysis failed with an unexpected error: {exc}")
 
     # Section 3: Review Results and Details
@@ -181,9 +184,13 @@ def main():
             st.markdown("#### Input Values")
             st.write(f"**Transaction ID:** `{record['transaction_id']}`")
             st.write(f"**Amount:** `${record['amount']:.2f}`")
-            st.write(f"**Historical Average Amount:** `${record['historical_average_amount']:.2f}`")
+            st.write(
+                f"**Historical Average Amount:** `${record['historical_average_amount']:.2f}`"
+            )
             st.write(f"**Amount Ratio:** `{record['amount_ratio']:.2f}x`")
-            st.write(f"**Transactions (Last 10m):** `{record['transactions_last_10m']}`")
+            st.write(
+                f"**Transactions (Last 10m):** `{record['transactions_last_10m']}`"
+            )
             st.write(f"**Is New Device:** `{record['is_new_device']}`")
 
         with detail_right:
@@ -191,7 +198,9 @@ def main():
             st.write(
                 f"**Anomaly Score:** `{record['anomaly_score']:.4f}` *(lower = more anomalous)*"
             )
-            st.write(f"**Model Finding:** `{record['model_finding']}` *(IsolationForest unsupervised baseline)*")
+            st.write(
+                f"**Model Finding:** `{record['model_finding']}` *(IsolationForest unsupervised baseline)*"
+            )
             st.write(f"**Outcome:** `{record['outcome']}`")
 
             triggers_str = (
@@ -203,10 +212,14 @@ def main():
             st.caption(
                 f"Policy Rule: Flag if model finding == Outlier OR amount_ratio >= {POLICY_AMOUNT_RATIO_THRESHOLD:.1f}x (illustrative threshold)"
             )
-            st.write(f"**Engine Versions:** `{record['model_version']}` | `{record['policy_version']}`")
+            st.write(
+                f"**Engine Versions:** `{record['model_version']}` | `{record['policy_version']}`"
+            )
 
         st.markdown("#### Supporting Factual Evidence")
-        st.caption("Factual statements derived strictly from input values (not an explanation of internal model weights).")
+        st.caption(
+            "Factual statements derived strictly from input values (not an explanation of internal model weights)."
+        )
         for item in record["evidence"]:
             st.markdown(f"- {item}")
 
@@ -221,9 +234,10 @@ def main():
 
     else:
         st.divider()
-        st.info("Ready. Click 'Analyse transactions' above to evaluate the bundled batch.")
+        st.info(
+            "Ready. Click 'Analyse transactions' above to evaluate the bundled batch."
+        )
 
 
 if __name__ == "__main__":
     main()
-

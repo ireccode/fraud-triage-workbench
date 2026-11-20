@@ -6,8 +6,8 @@ Provides deterministic factual evidence matching exact input values without
 claiming internal model explainability.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
-import numpy as np
+from typing import Any
+
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
@@ -24,7 +24,7 @@ POLICY_AMOUNT_RATIO_THRESHOLD: float = 5.0
 FEATURE_COLUMNS = ["amount_ratio", "transactions_last_10m", "is_new_device"]
 
 
-def build_feature_matrix(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+def build_feature_matrix(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     """Derive features from raw validated transactions.
 
     Returns:
@@ -43,7 +43,7 @@ def build_feature_matrix(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
 
 
 def train_reference_model(
-    reference_df: Optional[pd.DataFrame] = None,
+    reference_df: pd.DataFrame | None = None,
     random_state: int = 42,
     contamination: float = 0.05,
     n_estimators: int = 100,
@@ -74,13 +74,13 @@ def generate_factual_evidence(
     ratio: float,
     transactions_last_10m: int,
     is_new_device: bool,
-) -> List[str]:
+) -> list[str]:
     """Produce deterministic factual statements from raw input values.
 
     These reflect observed input properties and rule boundaries; they do NOT
     represent or explain the internal mathematical reasoning of the IsolationForest.
     """
-    evidence: List[str] = [
+    evidence: list[str] = [
         f"Amount is {ratio:.1f} times the historical average (${amount:.2f} vs ${historical_average:.2f}).",
         "Device is new." if is_new_device else "Device is known (not new).",
         f"{transactions_last_10m} transaction(s) occurred in the preceding 10 minutes.",
@@ -91,7 +91,7 @@ def generate_factual_evidence(
 def evaluate_batch(
     df: pd.DataFrame,
     model: IsolationForest,
-    collector: Optional[TelemetryCollector] = None,
+    collector: TelemetryCollector | None = None,
 ) -> pd.DataFrame:
     """Validate, score, and apply policy rules to a batch of transactions.
 
@@ -118,7 +118,7 @@ def evaluate_batch(
     scores = model.decision_function(features[FEATURE_COLUMNS])
     preds = model.predict(features[FEATURE_COLUMNS])  # -1 for outlier, 1 for inlier
 
-    result_rows: List[Dict[str, Any]] = []
+    result_rows: list[dict[str, Any]] = []
     review_count = 0
 
     for idx, (row_idx, row) in enumerate(clean_df.iterrows()):
@@ -129,7 +129,7 @@ def evaluate_batch(
 
         model_finding = "Outlier" if is_model_outlier else "Inlier"
 
-        triggers: List[str] = []
+        triggers: list[str] = []
         if is_model_outlier:
             triggers.append("Model anomaly finding (IsolationForest)")
         if is_ratio_outlier:
@@ -189,4 +189,3 @@ def evaluate_batch(
         )
 
     return results_df
-

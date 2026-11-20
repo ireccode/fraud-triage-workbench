@@ -1,2 +1,1 @@
 """Fraud Triage Workbench package."""
-

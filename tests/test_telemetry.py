@@ -2,7 +2,6 @@
 
 import json
 from io import StringIO
-import pytest
 
 from fraud.telemetry import TelemetryCollector
 
@@ -93,4 +92,3 @@ def test_telemetry_in_memory_buffer():
     json_str = collector.to_json()
     parsed = json.loads(json_str)
     assert len(parsed) == 2
-

@@ -194,4 +194,3 @@ def test_boolean_type_coercion():
     )
     clean = validate_transactions(df)
     assert list(clean["is_new_device"]) == [True, False, True, False]
-

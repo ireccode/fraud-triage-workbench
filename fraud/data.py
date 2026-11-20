@@ -6,6 +6,7 @@ Provides deterministic generation of:
 """
 
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -21,7 +22,9 @@ REQUIRED_COLUMNS = [
 ]
 
 
-def generate_reference_data(n_samples: int = 1000, seed: int = DEFAULT_REFERENCE_SEED) -> pd.DataFrame:
+def generate_reference_data(
+    n_samples: int = 1000, seed: int = DEFAULT_REFERENCE_SEED
+) -> pd.DataFrame:
     """Generate deterministic reference transactions for baseline model training.
 
     This dataset simulates standard customer transaction behaviour without labels.
@@ -57,7 +60,9 @@ def generate_reference_data(n_samples: int = 1000, seed: int = DEFAULT_REFERENCE
     return df[REQUIRED_COLUMNS]
 
 
-def generate_demo_data(n_samples: int = 50, seed: int = DEFAULT_DEMO_SEED) -> pd.DataFrame:
+def generate_demo_data(
+    n_samples: int = 50, seed: int = DEFAULT_DEMO_SEED
+) -> pd.DataFrame:
     """Generate deterministic demonstration transactions for triage evaluation.
 
     Contains mostly ordinary payment transactions alongside a small number of
@@ -141,7 +146,9 @@ def generate_demo_data(n_samples: int = 50, seed: int = DEFAULT_DEMO_SEED) -> pd
     combined_df = pd.concat([ordinary_df, unusual_df], ignore_index=True)
 
     # Re-index IDs consecutively to avoid sorting bias
-    combined_df["transaction_id"] = [f"TXN-{i + 1:04d}" for i in range(len(combined_df))]
+    combined_df["transaction_id"] = [
+        f"TXN-{i + 1:04d}" for i in range(len(combined_df))
+    ]
     return combined_df[REQUIRED_COLUMNS]
 
 
@@ -157,4 +164,3 @@ def save_sample_csv(output_path: str | Path = "data/sample_transactions.csv") ->
 if __name__ == "__main__":
     saved = save_sample_csv()
     print(f"Generated sample dataset at: {saved.resolve()}")
-

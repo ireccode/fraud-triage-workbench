@@ -1,6 +1,5 @@
 """Validation module for input transaction batches."""
 
-from typing import List
 import numpy as np
 import pandas as pd
 
@@ -8,7 +7,7 @@ import pandas as pd
 class ValidationError(ValueError):
     """Raised when an input transaction dataset violates validation rules."""
 
-    def __init__(self, message: str, errors: List[str] | None = None):
+    def __init__(self, message: str, errors: list[str] | None = None):
         super().__init__(message)
         self.message = message
         self.errors = errors or [message]
@@ -47,7 +46,9 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
         raise ValidationError("Input data must be a valid pandas DataFrame.")
 
     if df.empty:
-        raise ValidationError("Input transaction batch is empty. Please provide at least one transaction.")
+        raise ValidationError(
+            "Input transaction batch is empty. Please provide at least one transaction."
+        )
 
     # 1. Column presence check
     missing_cols = [col for col in REQUIRED_COLUMNS if col not in df.columns]
@@ -59,7 +60,7 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
 
     # Work on a copy with only required columns
     clean_df = df[REQUIRED_COLUMNS].copy()
-    errors: List[str] = []
+    errors: list[str] = []
 
     # 2. Transaction ID checks: non-empty, unique, string-like
     txn_ids = clean_df["transaction_id"]
@@ -71,15 +72,22 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
         if (clean_df["transaction_id"] == "").any():
             errors.append("transaction_id contains empty or blank strings.")
 
-        duplicates = clean_df[clean_df.duplicated(subset=["transaction_id"], keep=False)]
+        duplicates = clean_df[
+            clean_df.duplicated(subset=["transaction_id"], keep=False)
+        ]
         if not duplicates.empty:
             dup_sample = duplicates["transaction_id"].unique()[:3].tolist()
             errors.append(f"Duplicate transaction_id values detected: {dup_sample}.")
 
     # 3. Numeric checks: prevent boolean types from being coerced to numeric
     for num_col in ["amount", "historical_average_amount", "transactions_last_10m"]:
-        if clean_df[num_col].dtype == bool or clean_df[num_col].map(lambda x: isinstance(x, bool)).any():
-            errors.append(f"Column '{num_col}' must contain numeric values, not booleans.")
+        if (
+            clean_df[num_col].dtype == bool
+            or clean_df[num_col].map(lambda x: isinstance(x, bool)).any()
+        ):
+            errors.append(
+                f"Column '{num_col}' must contain numeric values, not booleans."
+            )
 
     # 3a. Numeric checks: amount
     try:
@@ -89,7 +97,9 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
 
     # 4. Numeric checks: historical_average_amount
     try:
-        clean_df["historical_average_amount"] = pd.to_numeric(clean_df["historical_average_amount"])
+        clean_df["historical_average_amount"] = pd.to_numeric(
+            clean_df["historical_average_amount"]
+        )
     except (ValueError, TypeError):
         errors.append("Column 'historical_average_amount' contains non-numeric values.")
 
@@ -107,21 +117,31 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
             clean_df["historical_average_amount"].isna().any()
             or np.isinf(clean_df["historical_average_amount"]).any()
         ):
-            errors.append("Column 'historical_average_amount' contains NaN, null, or infinite values.")
+            errors.append(
+                "Column 'historical_average_amount' contains NaN, null, or infinite values."
+            )
         elif (clean_df["historical_average_amount"] <= 0).any():
-            errors.append("Column 'historical_average_amount' must be strictly positive (> 0.00).")
+            errors.append(
+                "Column 'historical_average_amount' must be strictly positive (> 0.00)."
+            )
 
     # 6. transactions_last_10m: non-negative integer
     try:
         raw_vel = pd.to_numeric(clean_df["transactions_last_10m"])
         if raw_vel.isna().any() or np.isinf(raw_vel).any():
-            errors.append("Column 'transactions_last_10m' contains NaN, null, or infinite values.")
+            errors.append(
+                "Column 'transactions_last_10m' contains NaN, null, or infinite values."
+            )
         else:
             # Check if all values are exact integers
             if not np.all(raw_vel.to_numpy() == raw_vel.round().to_numpy()):
-                errors.append("Column 'transactions_last_10m' must contain whole integers, not decimals.")
+                errors.append(
+                    "Column 'transactions_last_10m' must contain whole integers, not decimals."
+                )
             elif (raw_vel < 0).any():
-                errors.append("Column 'transactions_last_10m' must be non-negative (>= 0).")
+                errors.append(
+                    "Column 'transactions_last_10m' must be non-negative (>= 0)."
+                )
             else:
                 clean_df["transactions_last_10m"] = raw_vel.astype(int)
     except (ValueError, TypeError):
@@ -133,7 +153,9 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
         errors.append("Column 'is_new_device' contains null or missing values.")
     else:
         # Check if values are boolean or unambiguous boolean representations
-        valid_bools = {True, False, 1, 0, "true", "false", "True", "False", "1", "0", 1.0, 0.0}
+        # Note: 1==True, 0==False, 1.0==True, 0.0==False in Python hash equality,
+        # so the set uses True/False as canonical representatives; string forms are kept separately.
+        valid_bools = {True, False, "true", "false", "True", "False", "1", "0"}
         invalid_mask = ~raw_device.isin(valid_bools)
         if invalid_mask.any():
             errors.append("Column 'is_new_device' contains non-boolean values.")
@@ -142,23 +164,20 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
             mapping = {
                 True: True,
                 False: False,
-                1: True,
-                0: False,
                 "true": True,
                 "True": True,
                 "1": True,
                 "false": False,
                 "False": False,
                 "0": False,
-                1.0: True,
-                0.0: False,
             }
             clean_df["is_new_device"] = raw_device.map(mapping).astype(bool)
 
     if errors:
-        summary_msg = f"Validation failed with {len(errors)} error(s): " + "; ".join(errors)
+        summary_msg = f"Validation failed with {len(errors)} error(s): " + "; ".join(
+            errors
+        )
         raise ValidationError(summary_msg, errors=errors)
 
     clean_df["transaction_id"] = clean_df["transaction_id"].astype(str).str.strip()
     return clean_df
-

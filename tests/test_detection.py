@@ -6,7 +6,6 @@ import pytest
 from fraud.data import generate_demo_data, generate_reference_data
 from fraud.detection import (
     MODEL_VERSION,
-    POLICY_AMOUNT_RATIO_THRESHOLD,
     POLICY_VERSION,
     evaluate_batch,
     generate_factual_evidence,
@@ -72,7 +71,9 @@ def test_review_queue_ordering_by_anomaly_score(trained_model):
     )
     assert not reviews.empty
     scores = reviews["anomaly_score"].tolist()
-    assert scores == sorted(scores), "Anomaly scores in review queue must be sorted ascending"
+    assert scores == sorted(scores), (
+        "Anomaly scores in review queue must be sorted ascending"
+    )
 
 
 def test_factual_evidence_matches_inputs():
@@ -104,4 +105,3 @@ def test_version_constants_attached(trained_model):
     res = evaluate_batch(df, trained_model)
     assert res.iloc[0]["model_version"] == MODEL_VERSION
     assert res.iloc[0]["policy_version"] == POLICY_VERSION
-
