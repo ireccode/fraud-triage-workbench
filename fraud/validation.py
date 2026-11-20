@@ -66,9 +66,9 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
     if txn_ids.isna().any():
         errors.append("transaction_id contains null or missing values.")
     else:
-        # Check for empty or whitespace-only strings
-        str_ids = txn_ids.astype(str).str.strip()
-        if (str_ids == "").any():
+        # Normalize by converting to string and stripping leading/trailing whitespace
+        clean_df["transaction_id"] = txn_ids.astype(str).str.strip()
+        if (clean_df["transaction_id"] == "").any():
             errors.append("transaction_id contains empty or blank strings.")
 
         duplicates = clean_df[clean_df.duplicated(subset=["transaction_id"], keep=False)]

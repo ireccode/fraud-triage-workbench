@@ -59,6 +59,21 @@ def test_duplicate_transaction_ids_rejected():
         validate_transactions(df)
 
 
+def test_whitespace_padded_duplicate_transaction_ids_rejected():
+    """IDs that become duplicates after whitespace normalization must be rejected."""
+    df = pd.DataFrame(
+        {
+            "transaction_id": ["TXN-101", " TXN-101 "],
+            "amount": [50.0, 60.0],
+            "historical_average_amount": [50.0, 50.0],
+            "transactions_last_10m": [0, 1],
+            "is_new_device": [False, True],
+        }
+    )
+    with pytest.raises(ValidationError, match="Duplicate transaction_id"):
+        validate_transactions(df)
+
+
 def test_empty_or_whitespace_transaction_ids():
     """Empty or blank transaction IDs should be rejected."""
     df = pd.DataFrame(
