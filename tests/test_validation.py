@@ -105,6 +105,34 @@ def test_invalid_amounts_rejected(invalid_amount):
         validate_transactions(df)
 
 
+@pytest.mark.parametrize("bool_val", [True, False])
+def test_boolean_in_numeric_columns_rejected(bool_val):
+    """Boolean values must not be accepted as amounts or counts."""
+    df_amt = pd.DataFrame(
+        {
+            "transaction_id": ["TXN-001"],
+            "amount": [bool_val],
+            "historical_average_amount": [50.0],
+            "transactions_last_10m": [0],
+            "is_new_device": [False],
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate_transactions(df_amt)
+
+    df_vel = pd.DataFrame(
+        {
+            "transaction_id": ["TXN-001"],
+            "amount": [50.0],
+            "historical_average_amount": [50.0],
+            "transactions_last_10m": [bool_val],
+            "is_new_device": [False],
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate_transactions(df_vel)
+
+
 @pytest.mark.parametrize("invalid_hist", [0.0, -10.0, np.nan, np.inf, -np.inf])
 def test_invalid_historical_average_rejected(invalid_hist):
     """Historical average amount <= 0, NaN, or infinite must be rejected."""

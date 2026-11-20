@@ -76,7 +76,12 @@ def validate_transactions(df: pd.DataFrame) -> pd.DataFrame:
             dup_sample = duplicates["transaction_id"].unique()[:3].tolist()
             errors.append(f"Duplicate transaction_id values detected: {dup_sample}.")
 
-    # 3. Numeric checks: amount
+    # 3. Numeric checks: prevent boolean types from being coerced to numeric
+    for num_col in ["amount", "historical_average_amount", "transactions_last_10m"]:
+        if clean_df[num_col].dtype == bool or clean_df[num_col].map(lambda x: isinstance(x, bool)).any():
+            errors.append(f"Column '{num_col}' must contain numeric values, not booleans.")
+
+    # 3a. Numeric checks: amount
     try:
         clean_df["amount"] = pd.to_numeric(clean_df["amount"])
     except (ValueError, TypeError):
